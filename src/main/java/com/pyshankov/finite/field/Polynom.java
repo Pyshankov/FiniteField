@@ -10,10 +10,12 @@ import java.util.List;
 public class Polynom {
     private final int[] polymomCoefficient;
     private final int degree;
+    private final int index;
 
     public Polynom(int[] polynomCoefficient) {
         this.polymomCoefficient = polynomCoefficient;
         degree=computeDegree(polynomCoefficient);
+        index=toTenFromBinary();
     }
 
     public static int computeDegree(int[] v){
@@ -185,4 +187,7 @@ public class Polynom {
         return  new Polynom(vals);
     }
 
+    public int getIndex() {
+        return index;
+    }
 }

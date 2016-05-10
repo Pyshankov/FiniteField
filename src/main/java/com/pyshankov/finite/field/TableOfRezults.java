@@ -65,24 +65,24 @@ public class TableOfRezults {
         }
         System.out.println("boolean functions have been build");
 
-        showRezultsOfBolleanFunction();
-        //build anf for functions
-        computeANF(f,g);
-        //degree
-        computeANFDegree();
-        //disbalance
-       computeDisbalance(f,g);
-        //nonlinearity
-       computenonlinearity(f,g);
-        //compute Ki and Eki
+//        showRezultsOfBolleanFunction();
+//        //build anf for functions
+//        computeANF(f,g);
+//        //degree
+//        computeANFDegree();
+//        //disbalance
+//       computeDisbalance(f,g);
+//        //nonlinearity
+//       computenonlinearity(f,g);
+//        //compute Ki and Eki
         algebraicNormalFormsF.clear();
         algebraicNormalFormsG.clear();
         algebraicDegreeF.clear();
         algebraicDegreeG.clear();
         nonlinearityF.clear();
         nonlinearityG.clear();
-
-        computeKi(f,g);
+//
+//        computeKi(f,g);
 
         //compute max df
         computeMaxDf(f,g);
@@ -300,11 +300,13 @@ public class TableOfRezults {
     public void computeMaxDf(Function<Polynom, Polynom> f, Function<Polynom, Polynom> g){
 
         try (FileWriter fw1 = new FileWriter("maxDf.txt") ) {
-            fw1.write("F : "+Functions.computeMaxDf(finiteField,f)+"\n");
-            fw1.write("G : "+Functions.computeMaxDf(finiteField,g)+"\n");
+
+            fw1.write("F : "+Functions.MDP2(finiteField,fFuncl)+"\n");
+            fw1.write("G : "+Functions.MDP2(finiteField,gFuncl)+"\n");
+
         }catch (IOException e) {}
-        System.out.println(Functions.computeMaxDf(finiteField,f));
-        System.out.println(Functions.computeMaxDf(finiteField,g));
+//        System.out.println(Functions.computeMaxDf(finiteField,f));
+//        System.out.println(Functions.computeMaxDf(finiteField,g));
 
         System.out.println("max Df of functions have been computed");
     }
