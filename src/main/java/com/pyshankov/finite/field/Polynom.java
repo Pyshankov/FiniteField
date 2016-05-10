@@ -1,7 +1,5 @@
 package com.pyshankov.finite.field;
 
-import com.sun.istack.internal.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,7 +62,7 @@ public class Polynom {
         return res;
     }
 
-    public static int[] changeSize(@NotNull int[] v, int size){
+    public static int[] changeSize(int[] v, int size){
         int[] res;
         if(v.length>=size) return v;
         res = new int[size];
@@ -76,7 +74,7 @@ public class Polynom {
         return res;
     }
 
-    public static int[] trimToSize(@NotNull int[] v, int size){
+    public static int[] trimToSize( int[] v, int size){
         int[] res;
         res = new int[size];
         int j = size-1;
@@ -87,7 +85,7 @@ public class Polynom {
         return res;
     }
 
-    public static int[] binaryShift(@NotNull int[] v,int shiftNum){
+    public static int[] binaryShift(int[] v,int shiftNum){
 //        v= changeSize(v,initialSize);
 
         int[] res = new int[v.length];
@@ -150,7 +148,7 @@ public class Polynom {
         return new Polynom(c);
     }
 
-    public static boolean isAllNull(@NotNull int[] mas){
+    public static boolean isAllNull(int[] mas){
         for (int i = 0 ; i < mas.length ; i++){
             if(mas[i]==1) return false;
         }

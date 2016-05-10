@@ -63,15 +63,15 @@ public class Functions {
 
     //nonlinearity
     public static List<Double> nonlinearity(FiniteField GF,Function<Polynom,Polynom> F,List<Double> res1){
-        long time = System.currentTimeMillis();
         List<Double> listMax = new ArrayList<>(GF.getElements().size());
         for( int i = 0 ; i < GF.getModule().getDegree() ; i++){
             int j = i;
+            long t = System.currentTimeMillis();
             double r = Math.pow(2d,GF.getModule().getDegree()-1) - 0.5 * maxWalshInField(GF,p->F.apply(p).getPolymomCoefficient()[j]);
+            System.out.println(System.currentTimeMillis()-t);
             listMax.add(r);
             res1.add(r);
         }
-        System.out.println(System.currentTimeMillis()-time);
         return listMax;
     }
 
@@ -163,8 +163,10 @@ public class Functions {
 
         for(int i = 1 ; i < field.getElements().size() ; i++){
             for(int j = 1 ; j < field.getElements().size() ; j++){
+                long t = System.currentTimeMillis();
                 if(i!=j)
                 res.add(dF(field,f,field.getElements().get(i),field.getElements().get(j)));
+                System.out.println(System.currentTimeMillis()-t);
             }
         }
         return Collections.max(res);

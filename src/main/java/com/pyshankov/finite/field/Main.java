@@ -9,6 +9,7 @@ public class Main {
 //        int[] module5 = {1,0,0,1,0,1};
         int[] module5 = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 //        int[] module5 = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1};
+//        int[] module5 = {1,0,0,0,0,0,0,1,0,0,1};
         Polynom p5 = new Polynom(module5);
 
         FiniteField gF2pow5 = new FiniteField(p5);

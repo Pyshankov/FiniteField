@@ -2,6 +2,8 @@ package com.pyshankov.finite.field;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,11 +71,19 @@ public class TableOfRezults {
         //degree
         computeANFDegree();
         //disbalance
-        computeDisbalance(f,g);
+       computeDisbalance(f,g);
         //nonlinearity
-        computenonlinearity(f,g);
+       computenonlinearity(f,g);
         //compute Ki and Eki
+        algebraicNormalFormsF.clear();
+        algebraicNormalFormsG.clear();
+        algebraicDegreeF.clear();
+        algebraicDegreeG.clear();
+        nonlinearityF.clear();
+        nonlinearityG.clear();
+
         computeKi(f,g);
+
         //compute max df
         computeMaxDf(f,g);
     }
@@ -186,8 +196,12 @@ public class TableOfRezults {
 
         try (FileWriter fw1 = new FileWriter("nonlinearity.txt") ) {
          fw1.write("F    G\n");
+            long timestamp = System.currentTimeMillis();
         Functions.nonlinearity(finiteField,f,nonlinearityF);
+            System.out.println((System.currentTimeMillis()-timestamp));
+            long timestamp1 = System.currentTimeMillis();
         Functions.nonlinearity(finiteField,g,nonlinearityG);
+            System.out.println((System.currentTimeMillis()-timestamp1));
             for(int i = 0 ; i < nonlinearityF.size() ; i ++){
                 fw1.write(nonlinearityF.get(i)+"  "+nonlinearityG.get(i)+"\n");
             }
@@ -199,6 +213,11 @@ public class TableOfRezults {
     }
 
     public void computeKi(Function<Polynom, Polynom> f, Function<Polynom, Polynom> g){
+        boolean isFStrong = true;
+        boolean isGStrong = true;
+        boolean isFStrongAverage = true;
+        boolean isGStrongAverage = true;
+
         try (FileWriter fw1 = new FileWriter("KiandEki.txt") ) {
             fw1.write("\n");
             for (int i = 0; i < finiteField.getModule().getDegree(); i++) {
@@ -211,9 +230,14 @@ public class TableOfRezults {
                             p -> f.apply(p).getPolymomCoefficient()[k],
                             i
                     );
+
+                    if(isFStrong==true){
+                        isFStrong = (res == Math.pow(2d,finiteField.getModule().getDegree()-1));
+                    }
+
                     KiF.get(i).add(res
                             + "(" +
-                            Functions.Eki(res, finiteField.getModule().getDegree())+")"
+                            new BigDecimal(Functions.Eki(res, finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue()+")"
                     );
 
                     int res2 = Functions.Ki(
@@ -221,9 +245,14 @@ public class TableOfRezults {
                             p -> g.apply(p).getPolymomCoefficient()[k],
                             i
                     );
+                    if(isGStrong==true){
+                        isGStrong = (res2 == Math.pow(2d,finiteField.getModule().getDegree()-1));
+                    }
+
                     KiG.get(i).add(res2
                             + "(" +
-                            Functions.Eki(res2, finiteField.getModule().getDegree())+")"
+                            new BigDecimal(Functions.Eki(res2, finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue()
+                              +")"
                     );
 
 
@@ -231,19 +260,39 @@ public class TableOfRezults {
                 fw1.write(changeSize(KiF.get(i).toString(),finiteField.getModule().getDegree()*2)+" "+KiG.get(i).toString()+"\n");
             }
             fw1.write(changeSize("Ki(f)(Eki)",KiF.get(0).toString().length())+" Ki(g)(Eki)\n");
+            fw1.write("\n");
+            fw1.write("does F have strong avalanche effect? : "+isFStrong);
+            fw1.write("\ndoes G have strong avalanche effect? : "+isGStrong);
 
             fw1.write("\n");
             for (int i = 0; i < finiteField.getModule().getDegree(); i++) {
+
                 int kf= Functions.KiF(finiteField,f,i);
+                if(isFStrongAverage==true){
+                    isFStrongAverage = (kf == finiteField.getModule().getDegree()*Math.pow(2d,finiteField.getModule().getDegree()-1));
+                }
+                float Ekf= new BigDecimal(Functions.EKi(kf,finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue();
                 int kg= Functions.KiF(finiteField,g,i);
+                if(isGStrongAverage==true){
+                    isGStrongAverage = (kg == finiteField.getModule().getDegree()*Math.pow(2d,finiteField.getModule().getDegree()-1));
+                }
+                float Ekg= new BigDecimal(Functions.EKi(kg,finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue();
                 fw1.write(
-                        changeSize(kf+"("+
-                                Functions.EKi(kf, finiteField.getModule().getDegree())+")",KiF.get(0).toString().length())+" "+
+                        changeSize(kf+"("+ Ekf
+                                +")",KiF.get(0).toString().length())+" "+
                                 kg+"(" +
-                                Functions.EKi(kg, finiteField.getModule().getDegree())+")\n"
+                                Ekg+")\n"
                 );
             }
             fw1.write(changeSize("Ki(F)(Eki)",KiF.get(0).toString().length())+" Ki(G)(Eki)\n");
+
+            fw1.write("\n");
+            fw1.write("does F have strong average avalanche effect? : "+isFStrongAverage);
+            fw1.write("\ndoes G have strong average avalanche effect? : "+isGStrongAverage);
+
+            fw1.write("\n");
+
+            System.out.println("Ki and ki of functions have been computed");
 
         }catch (IOException e){}
     }
@@ -256,6 +305,8 @@ public class TableOfRezults {
         }catch (IOException e) {}
         System.out.println(Functions.computeMaxDf(finiteField,f));
         System.out.println(Functions.computeMaxDf(finiteField,g));
+
+        System.out.println("max Df of functions have been computed");
     }
 
     private static String changeSize(String s,int size){
