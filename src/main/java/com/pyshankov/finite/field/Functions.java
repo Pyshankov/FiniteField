@@ -1,5 +1,7 @@
 package com.pyshankov.finite.field;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.SynchronousQueue;
 import java.util.function.Function;
@@ -30,19 +32,16 @@ public class Functions {
     }
 
     public static int maxWalshInField(FiniteField field, Function<Polynom, Integer> f) {
-        List<Integer> res = new ArrayList<>();
-
+        int max = 0;
         for (int i = 0; i < field.getElements().size(); i++) {
             int j = i;
-            res.add(
-                    walshFunction(
+                int res=    walshFunction(
                             field.getElements().get(j),
                             field,
-                            f
-                    )
-            );
+                            f);
+            if (max<res) max = res;
         }
-        return Collections.max(res);
+        return max;
     }
 
     //compute disbalance for each coordinate function of F
@@ -62,13 +61,15 @@ public class Functions {
     }
 
     //nonlinearity
-    public static List<Double> nonlinearity(FiniteField GF, Function<Polynom, Polynom> F, List<Double> res1) {
+    public static List<Double> nonlinearity(FiniteField GF, List<Polynom> list, List<Double> res1, FileWriter fileWriter) throws IOException {
         List<Double> listMax = new ArrayList<>(GF.getElements().size());
         for (int i = 0; i < GF.getModule().getDegree(); i++) {
             int j = i;
             long t = System.currentTimeMillis();
-            double r = Math.pow(2d, GF.getModule().getDegree() - 1) - 0.5 * maxWalshInField(GF, p -> F.apply(p).getPolymomCoefficient()[j]);
+            double r = Math.pow(2d, GF.getModule().getDegree() - 1) - 0.5 * maxWalshInField(GF, p -> list.get(p.getIndex()).getPolymomCoefficient()[j]);
             System.out.println(System.currentTimeMillis() - t);
+            System.out.println(r);
+            fileWriter.write(r+"\n");
             listMax.add(r);
             res1.add(r);
         }

@@ -58,13 +58,14 @@ public class TableOfRezults {
 
 
     private void generateRezultsForFandG(Function<Polynom, Polynom> f, Function<Polynom, Polynom> g) {
-
+        long t= System.currentTimeMillis();
         for (Polynom p : finiteField.getElements()) {
             fFuncl.add(f.apply(p));
             gFuncl.add(g.apply(p));
         }
+        System.out.println(System.currentTimeMillis()-t);
         System.out.println("boolean functions have been build");
-
+//
 //        showRezultsOfBolleanFunction();
 //        //build anf for functions
 //        computeANF(f,g);
@@ -72,20 +73,22 @@ public class TableOfRezults {
 //        computeANFDegree();
 //        //disbalance
 //       computeDisbalance(f,g);
-//        //nonlinearity
-//       computenonlinearity(f,g);
-//        //compute Ki and Eki
+        //nonlinearity
+       computenonlinearity();
+        //compute Ki and Eki
         algebraicNormalFormsF.clear();
         algebraicNormalFormsG.clear();
         algebraicDegreeF.clear();
         algebraicDegreeG.clear();
         nonlinearityF.clear();
         nonlinearityG.clear();
-//
-//        computeKi(f,g);
+
+//        computeKi();
+        System.out.println();
+
 
         //compute max df
-        computeMaxDf(f,g);
+//        computeMaxDf(f,g);
     }
 
     public void showRezultsOfBolleanFunction() {
@@ -117,11 +120,12 @@ public class TableOfRezults {
             for (int i = 0 ; i < finiteField.getModule().getDegree() ; i++){
                 int j = i;
                 long timestamp = System.currentTimeMillis();
-                algebraicNormalFormsF.add(Functions.getPolynomZygalnika(finiteField,p1->f.apply(p1).getPolymomCoefficient()[j]));
-                fw1.write(algebraicNormalFormsF.get(i).toString()+"\n" );
-                algebraicNormalFormsG.add(Functions.getPolynomZygalnika(finiteField,p1->g.apply(p1).getPolymomCoefficient()[j]));
-                fw2.write(algebraicNormalFormsF.get(i).toString()+"\n" );
+                algebraicNormalFormsF.add(Functions.getPolynomZygalnika(finiteField,p1->fFuncl.get(p1.getIndex()).getPolymomCoefficient()[j]));
                 System.out.println((System.currentTimeMillis()-timestamp)/1000);
+                fw1.write(algebraicNormalFormsF.get(i).toString()+"\n" );
+                algebraicNormalFormsG.add(Functions.getPolynomZygalnika(finiteField,p1->gFuncl.get(p1.getIndex()).getPolymomCoefficient()[j]));
+                fw2.write(algebraicNormalFormsF.get(i).toString()+"\n" );
+
             }
 
             System.out.println("anf have been build");
@@ -172,12 +176,12 @@ public class TableOfRezults {
                 int resF =  Functions.walshFunction(
                         finiteField.getElements().get(0),
                         finiteField,
-                        p -> f.apply(p).getPolymomCoefficient()[j]
+                        p -> fFuncl.get(p.getIndex()).getPolymomCoefficient()[j]
                 );
                 int resG= Functions.walshFunction(
                         finiteField.getElements().get(0),
                         finiteField,
-                        p -> g.apply(p).getPolymomCoefficient()[j]
+                        p -> gFuncl.get(p.getIndex()).getPolymomCoefficient()[j]
                 );
                 disbalanceF.add(resF);
                 disbalanceG.add(resG);
@@ -192,45 +196,51 @@ public class TableOfRezults {
         }
     }
 
-    public void computenonlinearity(Function<Polynom, Polynom> f, Function<Polynom, Polynom> g){
+    public void computenonlinearity(){
 
-        try (FileWriter fw1 = new FileWriter("nonlinearity.txt") ) {
-         fw1.write("F    G\n");
-            long timestamp = System.currentTimeMillis();
-        Functions.nonlinearity(finiteField,f,nonlinearityF);
-            System.out.println((System.currentTimeMillis()-timestamp));
-            long timestamp1 = System.currentTimeMillis();
-        Functions.nonlinearity(finiteField,g,nonlinearityG);
-            System.out.println((System.currentTimeMillis()-timestamp1));
-            for(int i = 0 ; i < nonlinearityF.size() ; i ++){
-                fw1.write(nonlinearityF.get(i)+"  "+nonlinearityG.get(i)+"\n");
+        new Thread(()->{
+            try (FileWriter fw1 = new FileWriter("nonlinearityF.txt") ) {
+                fw1.write("F\n");
+                Functions.nonlinearity(finiteField,fFuncl,nonlinearityF,fw1);
+                System.out.println("nonlinearity of f have been computed");
+            }catch (IOException e) {
             }
-            System.out.println("nonlinearity of functions have been computed");
-        }catch (IOException e) {
+        }).start();
 
-        }
+        new Thread(()->{
+            try (FileWriter fw1 = new FileWriter("nonlinearityG.txt") ) {
+                fw1.write("G\n");
+                Functions.nonlinearity(finiteField,gFuncl,nonlinearityG,fw1);
+                System.out.println("nonlinearity of g have been computed");
+            }catch (IOException e) {
+            }
+        }).start();
+
+
+
 
     }
 
-    public void computeKi(Function<Polynom, Polynom> f, Function<Polynom, Polynom> g){
+    public void computeKi(){
         boolean isFStrong = true;
         boolean isGStrong = true;
         boolean isFStrongAverage = true;
         boolean isGStrongAverage = true;
 
-        try (FileWriter fw1 = new FileWriter("KiandEki.txt") ) {
+        try (FileWriter fw1 = new FileWriter("KiandEkiF.txt") ;FileWriter fw2 = new FileWriter("KiandEkiG.txt") ) {
             fw1.write("\n");
             for (int i = 0; i < finiteField.getModule().getDegree(); i++) {
                 KiF.add(new ArrayList<>());
                 KiG.add(new ArrayList<>());
                 for (int j = 0; j < finiteField.getModule().getDegree(); j++) {
                     int k = j;
+                    long time = System.currentTimeMillis();
                     int res = Functions.Ki(
                             finiteField,
-                            p -> f.apply(p).getPolymomCoefficient()[k],
+                            p -> fFuncl.get(p.getIndex()).getPolymomCoefficient()[k],
                             i
                     );
-
+                    System.out.println(System.currentTimeMillis()-time);
                     if(isFStrong==true){
                         isFStrong = (res == Math.pow(2d,finiteField.getModule().getDegree()-1));
                     }
@@ -242,7 +252,7 @@ public class TableOfRezults {
 
                     int res2 = Functions.Ki(
                             finiteField,
-                            p -> g.apply(p).getPolymomCoefficient()[k],
+                            p -> gFuncl.get(p.getIndex()).getPolymomCoefficient()[k],
                             i
                     );
                     if(isGStrong==true){
@@ -254,10 +264,9 @@ public class TableOfRezults {
                             new BigDecimal(Functions.Eki(res2, finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue()
                               +")"
                     );
-
-
                 }
-                fw1.write(changeSize(KiF.get(i).toString(),finiteField.getModule().getDegree()*2)+" "+KiG.get(i).toString()+"\n");
+                fw1.write(changeSize(KiF.get(i).toString(),finiteField.getModule().getDegree()*2)+"\n");
+                fw2.write(changeSize(KiG.get(i).toString(),finiteField.getModule().getDegree()*2)+"\n");
             }
             fw1.write(changeSize("Ki(f)(Eki)",KiF.get(0).toString().length())+" Ki(g)(Eki)\n");
             fw1.write("\n");
@@ -267,22 +276,33 @@ public class TableOfRezults {
             fw1.write("\n");
             for (int i = 0; i < finiteField.getModule().getDegree(); i++) {
 
-                int kf= Functions.KiF(finiteField,f,i);
+                long time = System.currentTimeMillis();
+                int kf= Functions.KiF(finiteField,
+                        p-> fFuncl.get(p.getIndex())
+                        ,i);
+
+                System.out.println(System.currentTimeMillis()-time);
                 if(isFStrongAverage==true){
                     isFStrongAverage = (kf == finiteField.getModule().getDegree()*Math.pow(2d,finiteField.getModule().getDegree()-1));
                 }
                 float Ekf= new BigDecimal(Functions.EKi(kf,finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue();
-                int kg= Functions.KiF(finiteField,g,i);
+                int kg= Functions.KiF(finiteField,
+                        p-> gFuncl.get(p.getIndex())
+                        ,i);
+
                 if(isGStrongAverage==true){
                     isGStrongAverage = (kg == finiteField.getModule().getDegree()*Math.pow(2d,finiteField.getModule().getDegree()-1));
                 }
                 float Ekg= new BigDecimal(Functions.EKi(kg,finiteField.getModule().getDegree())).setScale(2, RoundingMode.HALF_DOWN).floatValue();
                 fw1.write(
                         changeSize(kf+"("+ Ekf
-                                +")",KiF.get(0).toString().length())+" "+
-                                kg+"(" +
-                                Ekg+")\n"
+                                +")",KiF.get(0).toString().length()) +"\n"
                 );
+                fw2.write(
+                        changeSize(kg+"("+ Ekg
+                                +")",KiG.get(0).toString().length()) +"\n"
+                );
+
             }
             fw1.write(changeSize("Ki(F)(Eki)",KiF.get(0).toString().length())+" Ki(G)(Eki)\n");
 
@@ -295,19 +315,20 @@ public class TableOfRezults {
             System.out.println("Ki and ki of functions have been computed");
 
         }catch (IOException e){}
+
     }
 
     public void computeMaxDf(Function<Polynom, Polynom> f, Function<Polynom, Polynom> g){
 
         try (FileWriter fw1 = new FileWriter("maxDf.txt") ) {
 
+            long time = System.currentTimeMillis();
             fw1.write("F : "+Functions.MDP2(finiteField,fFuncl)+"\n");
+            System.out.println("MDP time :  "+ (System.currentTimeMillis() - time));
+
             fw1.write("G : "+Functions.MDP2(finiteField,gFuncl)+"\n");
 
         }catch (IOException e) {}
-//        System.out.println(Functions.computeMaxDf(finiteField,f));
-//        System.out.println(Functions.computeMaxDf(finiteField,g));
-
         System.out.println("max Df of functions have been computed");
     }
 
